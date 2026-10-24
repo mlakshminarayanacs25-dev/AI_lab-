@@ -1,0 +1,106 @@
+# Tic-Tac-Toe Game
+
+board = [" "] * 9
+
+def display():
+    for i in range(0, 9, 3):
+        print(board[i], "|", board[i+1], "|", board[i+2])
+        if i < 6:
+            print("---------")
+
+def check_win(p):
+    wins = [(0,1,2), (3,4,5), (6,7,8),
+            (0,3,6), (1,4,7), (2,5,8),
+            (0,4,8), (2,4,6)]
+
+    for a, b, c in wins:
+        if board[a] == board[b] == board[c] == p:
+            return True
+    return False
+
+player = "X"
+
+while True:
+    display()
+    move = int(input("Player " + player + ", enter position (1-9): ")) - 1
+
+    if move < 0 or move > 8 or board[move] != " ":
+        print("Invalid move! Try again.")
+        continue
+
+    board[move] = player
+
+    if check_win(player):
+        display()
+        print("Player", player, "wins!")
+        break
+
+    if " " not in board:
+        display()
+        print("Match Draw!")
+        break
+
+    player = "O" if player == "X" else "X"
+
+
+
+# Vacuum Cleaner using Simple Reflex Agent
+
+A = input("Room A (Dirty/Clean): ").capitalize()
+B = input("Room B (Dirty/Clean): ").capitalize()
+position = input("Vacuum position (A/B): ").upper()
+
+while A == "Dirty" or B == "Dirty":
+    print("\nCurrent position:", position)
+
+    if position == "A":
+        if A == "Dirty":
+            A = "Clean"
+            print("Action: SUCK - Room A cleaned")
+        else:
+            position = "B"
+            print("Action: RIGHT - Move to Room B")
+    else:
+        if B == "Dirty":
+            B = "Clean"
+            print("Action: SUCK - Room B cleaned")
+        else:
+            position = "A"
+            print("Action: LEFT - Move to Room A")
+
+print("\nBoth rooms are clean!")
+print("Room A:", A)
+print("Room B:", B)
+
+
+
+# Vacuum Cleaner using Goal-Based Agent
+
+A = input("Room A (Dirty/Clean): ").capitalize()
+B = input("Room B (Dirty/Clean): ").capitalize()
+position = input("Vacuum position (A/B): ").upper()
+
+print("\nGoal: Both rooms must be CLEAN")
+
+while A != "Clean" or B != "Clean":
+    print("\nRoom A:", A, "| Room B:", B)
+    print("Vacuum position:", position)
+
+    if position == "A":
+        if A != "Clean":
+            A = "Clean"
+            print("Action: SUCK - Room A cleaned")
+        else:
+            position = "B"
+            print("Action: RIGHT - Move to Room B")
+    else:
+        if B != "Clean":
+            B = "Clean"
+            print("Action: SUCK - Room B cleaned")
+        else:
+            position = "A"
+            print("Action: LEFT - Move to Room A")
+
+print("\nGOAL ACHIEVED!")
+print("Room A:", A)
+print("Room B:", B)
