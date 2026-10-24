@@ -1,0 +1,116 @@
+{
+  "nbformat": 4,
+  "nbformat_minor": 0,
+  "metadata": {
+    "colab": {
+      "provenance": [],
+      "authorship_tag": "ABX9TyOUov0Q6ulfTfLI78vlBJ10",
+      "include_colab_link": true
+    },
+    "kernelspec": {
+      "name": "python3",
+      "display_name": "Python 3"
+    },
+    "language_info": {
+      "name": "python"
+    }
+  },
+  "cells": [
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "view-in-github",
+        "colab_type": "text"
+      },
+      "source": [
+        "<a href=\"https://colab.research.google.com/github/vishnu062006/ai-lab/blob/main/1BM24CS332_Week4_HillClimbing_N_Queens.ipynb\" target=\"_parent\"><img src=\"https://colab.research.google.com/assets/colab-badge.svg\" alt=\"Open In Colab\"/></a>"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": null,
+      "metadata": {
+        "id": "rWVL935kRohC"
+      },
+      "outputs": [],
+      "source": [
+        "import random\n",
+        "\n",
+        "N = 4\n",
+        "\n",
+        "def cost(board):\n",
+        "    \"\"\"Count pairs of queens attacking each other.\"\"\"\n",
+        "    conflicts = 0\n",
+        "    for i in range(N):\n",
+        "        for j in range(i + 1, N):\n",
+        "            if (board[i] == board[j] or\n",
+        "                abs(board[i] - board[j]) == abs(i - j)):\n",
+        "                conflicts += 1\n",
+        "    return conflicts\n",
+        "\n",
+        "\n",
+        "def get_neighbors(board):\n",
+        "    \"\"\"Move one queen to another row in its column.\"\"\"\n",
+        "    neighbors = []\n",
+        "    for col in range(N):\n",
+        "        for row in range(1, N + 1):\n",
+        "            if row != board[col]:\n",
+        "                neighbor = board.copy()\n",
+        "                neighbor[col] = row\n",
+        "                neighbors.append((col + 1, row, neighbor))\n",
+        "    return neighbors\n",
+        "\n",
+        "\n",
+        "def hill_climbing():\n",
+        "    restart = 0\n",
+        "\n",
+        "    while True:\n",
+        "        restart += 1\n",
+        "        current = [random.randint(1, N) for _ in range(N)]\n",
+        "\n",
+        "        print(f\"\\nRestart {restart}: Initial state = {current}\")\n",
+        "        print(\"Initial cost =\", cost(current))\n",
+        "\n",
+        "        while True:\n",
+        "            current_cost = cost(current)\n",
+        "\n",
+        "            if current_cost == 0:\n",
+        "                print(\"\\nGOAL FOUND!\")\n",
+        "                print(\"Final board:\", current)\n",
+        "                print(\"Final cost:\", current_cost)\n",
+        "                return current\n",
+        "\n",
+        "            neighbors = get_neighbors(current)\n",
+        "\n",
+        "            print(\"\\nCurrent state:\", current)\n",
+        "            print(\"Current cost:\", current_cost)\n",
+        "            print(\"Neighbor states and costs:\")\n",
+        "\n",
+        "            for col, row, neighbor in neighbors:\n",
+        "                print(\n",
+        "                    f\" Move column {col} to row {row}: \"\n",
+        "                    f\"{neighbor}, cost = {cost(neighbor)}\"\n",
+        "                )\n",
+        "\n",
+        "            # Choose a minimum-cost neighbor.\n",
+        "            best_cost = min(cost(nb) for _, _, nb in neighbors)\n",
+        "            best_neighbors = [\n",
+        "                nb for _, _, nb in neighbors\n",
+        "                if cost(nb) == best_cost\n",
+        "            ]\n",
+        "            best = random.choice(best_neighbors)\n",
+        "\n",
+        "            # Restart if no improvement is possible.\n",
+        "            if best_cost >= current_cost:\n",
+        "                print(\"Local minimum reached; restarting...\")\n",
+        "                break\n",
+        "\n",
+        "            current = best\n",
+        "\n",
+        "\n",
+        "if __name__ == \"__main__\":\n",
+        "    hill_climbing()"
+      ]
+    }
+  ]
+}
