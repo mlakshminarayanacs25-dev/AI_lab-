@@ -1,0 +1,184 @@
+{
+  "nbformat": 4,
+  "nbformat_minor": 0,
+  "metadata": {
+    "colab": {
+      "provenance": [],
+      "authorship_tag": "ABX9TyOC8cthyDNIvmAS3S2NyuIL",
+      "include_colab_link": true
+    },
+    "kernelspec": {
+      "name": "python3",
+      "display_name": "Python 3"
+    },
+    "language_info": {
+      "name": "python"
+    }
+  },
+  "cells": [
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "view-in-github",
+        "colab_type": "text"
+      },
+      "source": [
+        "<a href=\"https://colab.research.google.com/github/mlakshminarayanacs25-dev/AI_lab-/blob/main/1BM25CS472_Week6_PropositionalLogic_TruthTableEnumeration\" target=\"_parent\"><img src=\"https://colab.research.google.com/assets/colab-badge.svg\" alt=\"Open In Colab\"/></a>"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": 4,
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "1FXEiSEYaMrZ",
+        "outputId": "49426583-2050-4011-cdc5-ec4ae4155242"
+      },
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "\n",
+            "--- TRUTH TABLE ---\n",
+            "===================================================================\n",
+            "| P | Q | R | Q -> P | P -> ~Q | Q v R | KB | R | R -> P | Q -> R |\n",
+            "===================================================================\n",
+            "| F | F | F |   T  |    T   |   F   |  F | F |   T   |   T   |\n",
+            "| F | F | T |   T  |    T   |   T   |  T | T |   F   |   T   | <-- KB is True\n",
+            "| F | T | F |   F  |    T   |   T   |  F | F |   T   |   F   |\n",
+            "| F | T | T |   F  |    T   |   T   |  F | T |   F   |   T   |\n",
+            "| T | F | F |   T  |    T   |   F   |  F | F |   T   |   T   |\n",
+            "| T | F | T |   T  |    T   |   T   |  T | T |   T   |   T   | <-- KB is True\n",
+            "| T | T | F |   T  |    F   |   T   |  F | F |   T   |   F   |\n",
+            "| T | T | T |   T  |    F   |   T   |  F | T |   T   |   T   |\n",
+            "===================================================================\n",
+            "\n",
+            "i) Models in which KB is TRUE:\n",
+            "   {'P': False, 'Q': False, 'R': True}\n",
+            "   {'P': True, 'Q': False, 'R': True}\n",
+            "\n",
+            "--- ENTAILMENT RESULTS ---\n",
+            "ii)  Does KB entail R?      : True\n",
+            "iii) Does KB entail R -> P?  : False\n",
+            "iv)  Does KB entail Q -> R?  : True\n"
+          ]
+        }
+      ],
+      "source": [
+        "# USN_Week6_PropositionalLogic_TruthTableEnumeration.py\n",
+        "\n",
+        "def evaluate(expr, model):\n",
+        "    if isinstance(expr, str):\n",
+        "        return model[expr]\n",
+        "    op = expr[0]\n",
+        "    if op == 'NOT':\n",
+        "        return not evaluate(expr[1], model)\n",
+        "    elif op == 'AND':\n",
+        "        return evaluate(expr[1], model) and evaluate(expr[2], model)\n",
+        "    elif op == 'OR':\n",
+        "        return evaluate(expr[1], model) or evaluate(expr[2], model)\n",
+        "    elif op == 'IMPLIES':\n",
+        "        return (not evaluate(expr[1], model)) or evaluate(expr[2], model)\n",
+        "\n",
+        "def tt_check_all(kb, query, symbols, model):\n",
+        "    if not symbols:\n",
+        "        if evaluate(kb, model):\n",
+        "            return evaluate(query, model)\n",
+        "        return True\n",
+        "\n",
+        "    P = symbols[0]\n",
+        "    rest = symbols[1:]\n",
+        "\n",
+        "    model_true = model.copy()\n",
+        "    model_true[P] = True\n",
+        "\n",
+        "    model_false = model.copy()\n",
+        "    model_false[P] = False\n",
+        "\n",
+        "    return (tt_check_all(kb, query, rest, model_true) and\n",
+        "            tt_check_all(kb, query, rest, model_false))\n",
+        "\n",
+        "def tt_entails(kb, query, symbols):\n",
+        "    return tt_check_all(kb, query, symbols, {})\n",
+        "\n",
+        "def print_truth_table(symbols):\n",
+        "    header = f\"| {' | '.join(symbols)} | Q -> P | P -> ~Q | Q v R | KB | R | R -> P | Q -> R |\"\n",
+        "    print(\"=\" * len(header))\n",
+        "    print(header)\n",
+        "    print(\"=\" * len(header))\n",
+        "\n",
+        "    n = len(symbols)\n",
+        "    kb_true_models = []\n",
+        "\n",
+        "    for i in range(2**n):\n",
+        "        model = {\n",
+        "            'P': bool((i >> 2) & 1),\n",
+        "            'Q': bool((i >> 1) & 1),\n",
+        "            'R': bool(i & 1)\n",
+        "        }\n",
+        "\n",
+        "        s1 = evaluate(('IMPLIES', 'Q', 'P'), model)\n",
+        "        s2 = evaluate(('IMPLIES', 'P', ('NOT', 'Q')), model)\n",
+        "        s3 = evaluate(('OR', 'Q', 'R'), model)\n",
+        "        kb_val = s1 and s2 and s3\n",
+        "\n",
+        "        q1 = evaluate('R', model)\n",
+        "        q2 = evaluate(('IMPLIES', 'R', 'P'), model)\n",
+        "        q3 = evaluate(('IMPLIES', 'Q', 'R'), model)\n",
+        "\n",
+        "        if kb_val:\n",
+        "            kb_true_models.append(model)\n",
+        "\n",
+        "        fmt = lambda b: \"T\" if b else \"F\"\n",
+        "        row = (f\"| {fmt(model['P'])} | {fmt(model['Q'])} | {fmt(model['R'])} | \"\n",
+        "               f\"  {fmt(s1)}  |    {fmt(s2)}   |   {fmt(s3)}   |  {fmt(kb_val)} | \"\n",
+        "               f\"{fmt(q1)} |   {fmt(q2)}   |   {fmt(q3)}   |\")\n",
+        "        if kb_val:\n",
+        "            row += \" <-- KB is True\"\n",
+        "        print(row)\n",
+        "\n",
+        "    print(\"=\" * len(header))\n",
+        "    return kb_true_models\n",
+        "\n",
+        "if __name__ == \"__main__\":\n",
+        "    symbols = ['P', 'Q', 'R']\n",
+        "\n",
+        "    # Correctly nested KB expression: (Q -> P) AND (P -> ~Q) AND (Q v R)\n",
+        "    kb_expr = ('AND', ('IMPLIES', 'Q', 'P'), ('AND', ('IMPLIES', 'P', ('NOT', 'Q')), ('OR', 'Q', 'R')))\n",
+        "\n",
+        "    print(\"\\n--- TRUTH TABLE ---\")\n",
+        "    kb_models = print_truth_table(symbols)\n",
+        "\n",
+        "    print(\"\\ni) Models in which KB is TRUE:\")\n",
+        "    for m in kb_models:\n",
+        "        print(f\"   {m}\")\n",
+        "\n",
+        "    print(\"\\n--- ENTAILMENT RESULTS ---\")\n",
+        "    print(f\"ii)  Does KB entail R?      : {tt_entails(kb_expr, 'R', symbols)}\")\n",
+        "    print(f\"iii) Does KB entail R -> P?  : {tt_entails(kb_expr, ('IMPLIES', 'R', 'P'), symbols)}\")\n",
+        "    print(f\"iv)  Does KB entail Q -> R?  : {tt_entails(kb_expr, ('IMPLIES', 'Q', 'R'), symbols)}\")"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [],
+      "metadata": {
+        "id": "mkLn4AmydIBT"
+      },
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "source": [],
+      "metadata": {
+        "id": "mgIJ6wcddIWq"
+      },
+      "execution_count": null,
+      "outputs": []
+    }
+  ]
+}
